@@ -1,0 +1,21 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin
+.kotlin/
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Local SQLite database (recreated automatically when the server starts)
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+local.properties
