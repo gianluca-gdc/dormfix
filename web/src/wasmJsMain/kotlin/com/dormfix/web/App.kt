@@ -24,6 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dormfix.web.api.ApiClient
 import com.dormfix.web.api.HelloResponse
+import com.dormfix.web.screens.HomeScreen
+import com.dormfix.web.screens.ResidentScreen
+import com.dormfix.web.screens.StaffScreen
+
+private enum class Screen { HOME, RESIDENT, STAFF }
 
 private sealed interface HelloState {
     data object Loading : HelloState
@@ -33,17 +38,29 @@ private sealed interface HelloState {
 
 @Composable
 fun App() {
+    var currentScreen by remember { mutableStateOf(Screen.HOME) }
+
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            Box(contentAlignment = Alignment.Center) {
-                HelloCard()
+            when (currentScreen) {
+                Screen.HOME -> HomeScreen(
+                    onResidentClick = { currentScreen = Screen.RESIDENT },
+                    onStaffClick = { currentScreen = Screen.STAFF },
+                    helloCard = { HelloCard() },
+                )
+                Screen.RESIDENT -> ResidentScreen(
+                    onBack = { currentScreen = Screen.HOME },
+                )
+                Screen.STAFF -> StaffScreen(
+                    onBack = { currentScreen = Screen.HOME },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun HelloCard() {
+fun HelloCard() {
     var state by remember { mutableStateOf<HelloState>(HelloState.Loading) }
     var refreshCount by remember { mutableIntStateOf(0) }
 
@@ -62,13 +79,12 @@ private fun HelloCard() {
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("DormFix", style = MaterialTheme.typography.headlineMedium)
-            Text("Compose for Web frontend", style = MaterialTheme.typography.bodyMedium)
+            Text("Backend check", style = MaterialTheme.typography.titleMedium)
 
             when (val s = state) {
                 HelloState.Loading -> CircularProgressIndicator()
                 is HelloState.Success -> {
-                    Text(s.response.message, style = MaterialTheme.typography.titleMedium)
+                    Text(s.response.message, style = MaterialTheme.typography.bodyMedium)
                     Text("Server time: ${s.response.serverTime}", style = MaterialTheme.typography.bodySmall)
                 }
                 is HelloState.Error -> {

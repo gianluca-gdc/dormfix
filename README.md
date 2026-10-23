@@ -30,6 +30,7 @@ Tests: `./gradlew :server:test`
 
 - `GET /api/hello` - hello world check
 - `GET /actuator/health` - shows if the server is up
+- `GET /api/tickets` - list all tickets (returns `[]` in Phase 2)
 
 Add new endpoints here when you make them.
 

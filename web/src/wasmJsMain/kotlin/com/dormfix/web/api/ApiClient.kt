@@ -26,4 +26,7 @@ object ApiClient {
     }
 
     suspend fun hello(): HelloResponse = client.get("$BASE_URL/api/hello").body()
+
+    /** Returns the list of tickets from the server. Empty list in Phase 2. */
+    suspend fun getTickets(): List<String> = client.get("$BASE_URL/api/tickets").body()
 }
