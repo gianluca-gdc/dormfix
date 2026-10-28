@@ -35,6 +35,7 @@ dependencies {
 
     // Database: SQLite (a single file, no server to install) through Spring Data JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.security:spring-security-crypto")
     implementation("org.hibernate.orm:hibernate-community-dialects")
     runtimeOnly("org.xerial:sqlite-jdbc:3.49.1.0")
 
