@@ -30,7 +30,12 @@ Tests: `./gradlew :server:test`
 
 - `GET /api/hello` - hello world check
 - `GET /actuator/health` - shows if the server is up
-- `GET /api/tickets` - list all tickets (returns `[]` in Phase 2)
+- `GET /api/categories` - list all categories as `{ id, name }`
+- `GET /api/tickets` - list all tickets, newest first
+- `GET /api/tickets/{id}` - get one ticket (404 if it doesn't exist)
+- `POST /api/tickets` - create a ticket. Body: `{ "residentId", "categoryId", "roomNumber", "description", "priority" }` (priority is `LOW`, `MEDIUM` or `HIGH`). Returns 201 with the new ticket, which always starts as `OPEN`. Returns 400 with `{ "error": "..." }` if a field is missing or an id doesn't exist.
+
+Tickets come back as `{ "id", "residentName", "category", "roomNumber", "description", "priority", "status", "createdAt" }`, with `createdAt` as an ISO-8601 UTC string like `2026-10-20T14:30:00Z`.
 
 Add new endpoints here when you make them.
 
