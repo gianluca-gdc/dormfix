@@ -1,5 +1,6 @@
 package com.dormfix.web.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,16 +34,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.dormfix.web.api.Category
+import com.dormfix.web.api.LoginResponse
 import com.dormfix.web.api.TicketResponse
 
 @Composable
-fun StaffScreen(onBack: () -> Unit) {
+fun StaffScreen(
+    user: LoginResponse,
+    onTicketClick: (Int) -> Unit,
+    onLogout: () -> Unit,
+) {
     val state = remember { AllRequestsState() }
     var refreshTrigger by remember { mutableStateOf(0) }
 
-    LaunchedEffect(refreshTrigger) {
-        state.load()
-    }
+    LaunchedEffect(refreshTrigger) { state.load() }
 
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Row(
@@ -49,8 +54,12 @@ fun StaffScreen(onBack: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("All Requests", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = onBack) { Text("Back") }
+            Column {
+                Text("All Requests", style = MaterialTheme.typography.headlineMedium)
+                Text("Hi, ${user.name}", style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            TextButton(onClick = onLogout) { Text("Log out") }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -68,26 +77,19 @@ fun StaffScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(16.dp))
 
         when (val s = state.ticketsState) {
-            TicketsLoadState.Loading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+            TicketsLoadState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            is TicketsLoadState.Error -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        "Could not load tickets.",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                    Text(s.message, style = MaterialTheme.typography.bodySmall)
-                    Spacer(Modifier.height(12.dp))
-                    Button(onClick = { refreshTrigger++ }) { Text("Retry") }
-                }
+            is TicketsLoadState.Error -> Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text("Could not load tickets.", color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge)
+                Text(s.message, style = MaterialTheme.typography.bodySmall)
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = { refreshTrigger++ }) { Text("Retry") }
             }
             is TicketsLoadState.Success -> {
                 val filtered = state.filteredTickets()
@@ -98,7 +100,7 @@ fun StaffScreen(onBack: () -> Unit) {
                 } else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(filtered, key = { it.id }) { ticket ->
-                            TicketCard(ticket)
+                            TicketCard(ticket = ticket, onClick = { onTicketClick(ticket.id) })
                         }
                     }
                 }
@@ -123,7 +125,7 @@ private fun FilterRow(
     ) {
         FilterDropdown(
             label = "Status",
-            options = listOf("OPEN", "IN_PROGRESS", "CLOSED"),
+            options = listOf("OPEN", "IN_PROGRESS", "RESOLVED"),
             selected = filterStatus,
             onSelect = onStatusChange,
             modifier = Modifier.weight(1f),
@@ -161,10 +163,7 @@ private fun FilterDropdown(
         ) {
             Text(if (selected.isEmpty()) label else selected)
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
                 text = { Text("All $label") },
                 onClick = { onSelect(""); expanded = false },
@@ -180,8 +179,8 @@ private fun FilterDropdown(
 }
 
 @Composable
-private fun TicketCard(ticket: TicketResponse) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+private fun TicketCard(ticket: TicketResponse, onClick: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -206,7 +205,7 @@ private fun TicketCard(ticket: TicketResponse) {
                 Text(
                     ticket.priority,
                     style = MaterialTheme.typography.labelSmall,
-                    color = priorityColor(ticket.priority),
+                    color = staffPriorityColor(ticket.priority),
                 )
             }
             StatusChip(ticket.status)
@@ -217,14 +216,14 @@ private fun TicketCard(ticket: TicketResponse) {
 @Composable
 private fun StatusChip(status: String) {
     val containerColor = when (status) {
-        "OPEN" -> MaterialTheme.colorScheme.primaryContainer
+        "OPEN"        -> MaterialTheme.colorScheme.primaryContainer
         "IN_PROGRESS" -> MaterialTheme.colorScheme.secondaryContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant
+        else          -> MaterialTheme.colorScheme.surfaceVariant
     }
     val labelColor = when (status) {
-        "OPEN" -> MaterialTheme.colorScheme.onPrimaryContainer
+        "OPEN"        -> MaterialTheme.colorScheme.onPrimaryContainer
         "IN_PROGRESS" -> MaterialTheme.colorScheme.onSecondaryContainer
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+        else          -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     Surface(shape = RoundedCornerShape(50), color = containerColor) {
         Text(
@@ -237,8 +236,8 @@ private fun StatusChip(status: String) {
 }
 
 @Composable
-private fun priorityColor(priority: String): Color = when (priority) {
-    "HIGH" -> MaterialTheme.colorScheme.error
+private fun staffPriorityColor(priority: String): Color = when (priority) {
+    "HIGH"   -> MaterialTheme.colorScheme.error
     "MEDIUM" -> MaterialTheme.colorScheme.primary
-    else -> MaterialTheme.colorScheme.onSurfaceVariant
+    else     -> MaterialTheme.colorScheme.onSurfaceVariant
 }
