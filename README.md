@@ -28,6 +28,7 @@ Tests: `./gradlew :server:test`
 
 ## Endpoints
 
+- `POST /api/auth/login` - log in with `{ "email", "password" }`. Returns the user id, name, role and room number, or 401 with `{ "error": "Invalid email or password" }`.
 - `GET /api/hello` - hello world check
 - `GET /actuator/health` - shows if the server is up
 - `GET /api/categories` - list all categories as `{ id, name }`
@@ -38,6 +39,11 @@ Tests: `./gradlew :server:test`
 Tickets come back as `{ "id", "residentName", "category", "roomNumber", "description", "priority", "status", "createdAt" }`, with `createdAt` as an ISO-8601 UTC string like `2026-10-20T14:30:00Z`.
 
 Add new endpoints here when you make them.
+
+## Test accounts
+
+- Resident: `sam@example.edu` / `sam-password`
+- Staff: `dana@example.edu` / `dana-password`
 
 ## Git
 
