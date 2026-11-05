@@ -11,7 +11,7 @@ import com.dormfix.ticket.TicketStatus;
 import com.dormfix.ticket.StatusUpdateRepository;
 import com.dormfix.user.User;
 import com.dormfix.user.UserRepository;
-import com.dormfix.user.UserRole;
+import com.dormfix.user.Role;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +37,9 @@ public class DataSeeder {
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             User resident = users.save(new User("Sam", "sam@example.edu", encoder.encode("sam-password"),
-                    UserRole.RESIDENT, "214"));
+                    Role.RESIDENT, "214"));
             User staff = users.save(new User("Dana", "dana@example.edu", encoder.encode("dana-password"),
-                    UserRole.STAFF, null));
+                    Role.STAFF, null));
 
             tickets.saveAll(List.of(
                     new Ticket(resident, plumbing, "214", "The bathroom sink is leaking.", Priority.HIGH,

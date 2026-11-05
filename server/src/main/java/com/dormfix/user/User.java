@@ -29,7 +29,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private UserRole role;
+    private Role role;
 
     @Column(name = "room_number")
     private String roomNumber;
@@ -39,7 +39,7 @@ public class User {
 
     protected User() { }
 
-    public User(String name, String email, String passwordHash, UserRole role, String roomNumber) {
+    public User(String name, String email, String passwordHash, Role role, String roomNumber) {
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -52,7 +52,7 @@ public class User {
     public String getName() { return name; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
-    public UserRole getRole() { return role; }
+    public Role getRole() { return role; }
     public String getRoomNumber() { return roomNumber; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
