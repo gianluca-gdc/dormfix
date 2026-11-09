@@ -75,4 +75,10 @@ public class Ticket {
     public TicketStatus getStatus() { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    // Callers must check StatusRules first; this only records the change.
+    public void changeStatus(TicketStatus newStatus) {
+        this.status = newStatus;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

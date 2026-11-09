@@ -33,10 +33,15 @@ Tests: `./gradlew :server:test`
 - `GET /actuator/health` - shows if the server is up
 - `GET /api/categories` - list all categories as `{ id, name }`
 - `GET /api/tickets` - list all tickets, newest first
-- `GET /api/tickets/{id}` - get one ticket (404 if it doesn't exist)
-- `POST /api/tickets` - create a ticket. Body: `{ "residentId", "categoryId", "roomNumber", "description", "priority" }` (priority is `LOW`, `MEDIUM` or `HIGH`). Returns 201 with the new ticket, which always starts as `OPEN`. Returns 400 with `{ "error": "..." }` if a field is missing or an id doesn't exist.
+- `GET /api/tickets?residentId=1` - list one resident's tickets ("My Requests"), newest first
+- `GET /api/tickets/{id}` - get one ticket (404 `"Request not found."` if it doesn't exist)
+- `POST /api/tickets` - create a ticket. Body: `{ "residentId", "categoryId", "roomNumber", "description", "priority" }` (priority is `LOW`, `MEDIUM` or `HIGH`). Returns 201 with the new ticket, which always starts as `OPEN`. Returns 400 if a field is missing or an id doesn't exist, e.g. `"Description is required."` or `"Category not found."`.
+- `PATCH /api/tickets/{id}/status` - change a ticket's status. Body: `{ "newStatus", "actorId", "note" }` (note is optional). The change must be allowed by `StatusRules` (staff: OPEN → IN_PROGRESS → RESOLVED; the owning resident: RESOLVED → OPEN), otherwise 400 `"That status change isn't allowed."`. Returns 200 with the updated ticket and adds an entry to its history.
+- `GET /api/tickets/{id}/history` - the ticket's status changes, oldest first, as `[{ "oldStatus", "newStatus", "note", "updatedBy", "createdAt" }]` (`note` is `""` when none was given; 404 if the ticket doesn't exist)
 
-Tickets come back as `{ "id", "residentName", "category", "roomNumber", "description", "priority", "status", "createdAt" }`, with `createdAt` as an ISO-8601 UTC string like `2026-10-20T14:30:00Z`.
+Tickets come back as `{ "id", "residentId", "residentName", "category", "roomNumber", "description", "priority", "status", "createdAt" }`, with `createdAt` as an ISO-8601 UTC string like `2026-10-20T14:30:00Z`.
+
+Every error comes back as `{ "error": "<message>" }` with a matching status code (400, 401 or 404).
 
 Add new endpoints here when you make them.
 
